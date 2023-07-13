@@ -1,6 +1,7 @@
 local settingz = {
 
     allowmusic = true,
+    instantteleport = false,
     posekey = "I",
     dashkey = "Y",
     tpkey = "U",
@@ -12,7 +13,7 @@ itemtospawn = "DFAxe"
 
 --[[made by ry
 
-VERSION 4.5 [FIRST RELEASE]
+VERSION 4.6 [FIRST RELEASE]
 load this in a round to pursue
 editable
 if your making a char script using this template, you can credit me if you want, your choice.
@@ -135,15 +136,27 @@ char.HumanoidRootPart.Anchored = false
 tp_position = char.HumanoidRootPart.CFrame
 workspace.ServerStuff.playAudio:FireServer({ "general" }, "activateexplosive", workspace)
             else
+                if settingz.instantteleport == true then
+                    tp_planting = true
+                    char.HumanoidRootPart.CFrame = tp_position
+    workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive2", char.PrimaryPart)
+    workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive", char.PrimaryPart)
+    workspace.ServerStuff.handlePerkVisibility:FireServer("put_googles")
+    wait(0.1)
+    tp_position = nil
+            else
+
                 tp_planting = true
                 workspace.ServerStuff.playAudio:FireServer({ "ai" }, "radio_call1", workspace)
+            
 wait(1)
+char.HumanoidRootPart.CFrame = tp_position
 workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive2", char.PrimaryPart)
 workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive", char.PrimaryPart)
 workspace.ServerStuff.handlePerkVisibility:FireServer("put_googles")
-char.HumanoidRootPart.CFrame = tp_position
 wait(0.1)
 tp_position = nil
+                end
             end
         end
     end
