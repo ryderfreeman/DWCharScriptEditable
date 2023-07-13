@@ -12,7 +12,7 @@ itemtospawn = "DFAxe"
 
 --[[made by ry
 
-VERSION 4.0 [FIRST RELEASE]
+VERSION 4.5 [FIRST RELEASE]
 load this in a round to pursue
 editable
 if your making a char script using this template, you can credit me if you want, your choice.
@@ -28,6 +28,7 @@ local posing = false
 local allowmusic = settingz.allowmusic
 local tp_planting = true
 local tp_position = nil
+local humanoiddied = false
 
 
 --anims
@@ -91,6 +92,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     if gameProcessedEvent == true then
         return
     end
+    if char.Parent == workspace.activePlayers and humanoiddied == false then
         if input.KeyCode == Enum.KeyCode[settingz.dashkey] then
 
            
@@ -144,12 +146,13 @@ wait(0.1)
 tp_position = nil
             end
         end
-  
+    end
 end)
 
 char:WaitForChild("Humanoid").Died:Connect(function()
 workspace.ServerStuff.playAudio:FireServer({"soldiers"}, "defeat", char.PrimaryPart)
 wait(0.5)
+humanoiddied = true
 end)
 
 -- this is poorly coded, enjoy.
