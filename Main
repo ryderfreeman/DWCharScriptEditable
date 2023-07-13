@@ -3,7 +3,8 @@ local settingz = {
     allowmusic = true,
     posekey = "I",
     dashkey = "Y",
-    custommusic = "holdout_fight1",
+    tpkey = "U",
+    custommusic = "holdout_fight2",
 itemtospawn = "DFAxe"
 
 }
@@ -25,6 +26,9 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local posing = false
 local allowmusic = settingz.allowmusic
+local tp_planting = true
+local tp_position = nil
+
 
 --anims
 local maliceanim = char:WaitForChild("Humanoid"):LoadAnimation(animfolder.special.malice_combat)
@@ -120,7 +124,25 @@ char.HumanoidRootPart.Anchored = true
                 posing = false
                 restanim:Stop()
 char.HumanoidRootPart.Anchored = false
-end
+            end
+        end
+
+        if input.KeyCode == Enum.KeyCode[settingz.tpkey] then
+            if tp_planting == true then 
+                tp_planting = false
+tp_position = char.HumanoidRootPart.CFrame
+workspace.ServerStuff.playAudio:FireServer({ "general" }, "activateexplosive", workspace)
+            else
+                tp_planting = true
+                workspace.ServerStuff.playAudio:FireServer({ "ai" }, "radio_call1", workspace)
+wait(1)
+workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive2", char.PrimaryPart)
+workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive", char.PrimaryPart)
+workspace.ServerStuff.handlePerkVisibility:FireServer("put_googles")
+char.HumanoidRootPart.CFrame = tp_position
+wait(0.1)
+tp_position = nil
+            end
         end
   
 end)
