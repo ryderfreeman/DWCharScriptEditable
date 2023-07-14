@@ -1,19 +1,21 @@
 local settingz = {
 
-    allowmusic = true,
-    instantteleport = false,
-    posekey = "I",
-    dashkey = "Y",
-    tpkey = "U",
-    custommusic = "holdout_fight2",
-itemtospawn = "DFAxe"
+	allowmusic = true, -- If you want the music or not.
+	instantteleport = false, -- When teleporting, this determines if the teleportation is instant or not.
+	dashcooldown = true, -- Enable Dash Cooldown
+	dashcooldowntime = 1, -- Self Explanitory
+	posekey = "I", -- Key to pose.
+	dashkey = "Y", -- Key to Dash.
+	tpkey = "U", -- Key to Teleport.
+	custommusic = "holdout_fight2", -- Look in game.ReplicatedStorage.soundLibrary.songs to find songs to play, then input the name here.
+	itemtospawn = "DFAxe" -- Change this to any item ingame.
 
 }
 
 
 --[[made by ry
 
-VERSION 4.6 [FIRST RELEASE]
+VERSION 5 [FIRST RELEASE]
 load this in a round to pursue
 editable
 if your making a char script using this template, you can credit me if you want, your choice.
@@ -30,6 +32,7 @@ local allowmusic = settingz.allowmusic
 local tp_planting = true
 local tp_position = nil
 local humanoiddied = false
+local dashcd = false
 
 
 --anims
@@ -49,123 +52,151 @@ animfolder.global.low_idle.AnimationId = animfolder.global.idle.AnimationId
 --func
 
 function spawn(Item)
-local plrorigpos = char:WaitForChild("HumanoidRootPart").CFrame
-   local workbench = workspace.Interactables:FindFirstChild("Workbench")
- local item = ""..Item..""
- game.Players.LocalPlayer.Character:PivotTo(workbench:GetPivot() + Vector3.new(0, 5, 0))
- local args = {
-     [1] = workspace.Interactables.Workbench,
-     [2] = "workbenchblueprint"..item.."",
- }
- 
- game:GetService("ReplicatedStorage").Interactables.interaction:FireServer(unpack(args))
-  wait(0.01)
-  char:WaitForChild("HumanoidRootPart").CFrame = plrorigpos
- wait(1.7)
- local args = {
-     [1] = workspace.Interactables.Workbench,
-     [2] = "workbench",
- }
- 
- game:GetService("ReplicatedStorage").Interactables.interaction:FireServer(unpack(args))
- wait(4.8)
- game.Players.LocalPlayer.Character:PivotTo(workbench:GetPivot() + Vector3.new(0, 5, 0))
- wait(3)
-   char:WaitForChild("HumanoidRootPart").CFrame = plrorigpos
+	local plrorigpos = char:WaitForChild("HumanoidRootPart").CFrame
+	local workbench = workspace.Interactables:FindFirstChild("Workbench")
+	local item = ""..Item..""
+	game.Players.LocalPlayer.Character:PivotTo(workbench:GetPivot() + Vector3.new(0, 5, 0))
+	local args = {
+		[1] = workspace.Interactables.Workbench,
+		[2] = "workbenchblueprint"..item.."",
+	}
+
+	game:GetService("ReplicatedStorage").Interactables.interaction:FireServer(unpack(args))
+	wait(0.01)
+	char:WaitForChild("HumanoidRootPart").CFrame = plrorigpos
+	wait(1.7)
+	local args = {
+		[1] = workspace.Interactables.Workbench,
+		[2] = "workbench",
+	}
+
+	game:GetService("ReplicatedStorage").Interactables.interaction:FireServer(unpack(args))
+	wait(4.8)
+	game.Players.LocalPlayer.Character:PivotTo(workbench:GetPivot() + Vector3.new(0, 5, 0))
+	wait(3)
+	char:WaitForChild("HumanoidRootPart").CFrame = plrorigpos
 end
 
 --scripts
 if allowmusic == true then
-if workspace.activePlayers[plr.Name].HumanoidRootPart:FindFirstChild(settingz.custommusic) then
-print("music alr playing bruv!!")
-else
-workspace.ServerStuff.playAudio:FireServer({"songs"}, ""..settingz.custommusic.."", char.PrimaryPart)
-end
+	if workspace.activePlayers[plr.Name].HumanoidRootPart:FindFirstChild(settingz.custommusic) then
+		print("music alr playing bruv!!")
+	else
+		workspace.ServerStuff.playAudio:FireServer({"songs"}, ""..settingz.custommusic.."", char.PrimaryPart)
+	end
 end
 spawn(settingz.itemtospawn)
 maliceanim:Play()
 workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive2", char.PrimaryPart)
 workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive", char.PrimaryPart)
+wait(0.5)
+workspace.ServerStuff.dropAmmo:FireServer("scrap", 500)
 
 
 --kbinds
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent == true then
-        return
+	if gameProcessedEvent == true then
+		return
+	end
+	if settingz.dashcooldown == true then
+		if char.Parent == workspace.activePlayers and humanoiddied == false then
+			if input.KeyCode == Enum.KeyCode[settingz.dashkey] and dashcd == false then
+				dashcd = true
+				local direction = char.PrimaryPart.CFrame.Position + Vector3.new(0, .5, 0)
+				local bodyPosition = Instance.new("BodyPosition")
+				bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+				bodyPosition.P = 27500
+
+				if UserInputService:IsKeyDown(Enum.KeyCode.W) == true then direction -= char.PrimaryPart.CFrame.ZVector * 18 end
+				if UserInputService:IsKeyDown(Enum.KeyCode.A) == true then direction -= char.PrimaryPart.CFrame.XVector * 18 end
+				if UserInputService:IsKeyDown(Enum.KeyCode.S) == true then direction += char.PrimaryPart.CFrame.ZVector * 18 end
+				if UserInputService:IsKeyDown(Enum.KeyCode.D) == true then direction += char.PrimaryPart.CFrame.XVector * 18 end
+
+				if UserInputService:IsKeyDown(Enum.KeyCode.W) == false and UserInputService:IsKeyDown(Enum.KeyCode.A) == false and UserInputService:IsKeyDown(Enum.KeyCode.S) == false and UserInputService:IsKeyDown(Enum.KeyCode.D) == false then direction += char.PrimaryPart.CFrame.ZVector * 18 end
+
+				workspace.ServerStuff.playAudio:FireServer({"soldiers"}, "dash", char.PrimaryPart)
+				bodyPosition.Position = direction
+				bodyPosition.Parent = char.PrimaryPart
+				char.Humanoid:LoadAnimation(animfolder.special.dash):Play()
+
+				task.wait(.2)
+				bodyPosition:Destroy()
+				wait(settingz.dashcooldowntime)
+				dashcd = false
+			end
+		end
+	else
+		if char.Parent == workspace.activePlayers and humanoiddied == false then
+			if input.KeyCode == Enum.KeyCode[settingz.dashkey] then
+				local direction = char.PrimaryPart.CFrame.Position + Vector3.new(0, .5, 0)
+				local bodyPosition = Instance.new("BodyPosition")
+				bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+				bodyPosition.P = 27500
+
+				if UserInputService:IsKeyDown(Enum.KeyCode.W) == true then direction -= char.PrimaryPart.CFrame.ZVector * 18 end
+				if UserInputService:IsKeyDown(Enum.KeyCode.A) == true then direction -= char.PrimaryPart.CFrame.XVector * 18 end
+				if UserInputService:IsKeyDown(Enum.KeyCode.S) == true then direction += char.PrimaryPart.CFrame.ZVector * 18 end
+				if UserInputService:IsKeyDown(Enum.KeyCode.D) == true then direction += char.PrimaryPart.CFrame.XVector * 18 end
+
+				if UserInputService:IsKeyDown(Enum.KeyCode.W) == false and UserInputService:IsKeyDown(Enum.KeyCode.A) == false and UserInputService:IsKeyDown(Enum.KeyCode.S) == false and UserInputService:IsKeyDown(Enum.KeyCode.D) == false then direction += char.PrimaryPart.CFrame.ZVector * 18 end
+
+				workspace.ServerStuff.playAudio:FireServer({"soldiers"}, "dash", char.PrimaryPart)
+				bodyPosition.Position = direction
+				bodyPosition.Parent = char.PrimaryPart
+				char.Humanoid:LoadAnimation(animfolder.special.dash):Play()
+
+				task.wait(.2)
+				bodyPosition:Destroy()
+			end
+		end
     end
-    if char.Parent == workspace.activePlayers and humanoiddied == false then
-        if input.KeyCode == Enum.KeyCode[settingz.dashkey] then
+		if input.KeyCode == Enum.KeyCode[settingz.posekey] then
+			if posing == false then 
+				posing = true
+				restanim:Play()
+				char.HumanoidRootPart.Anchored = true
+			else
+				posing = false
+				restanim:Stop()
+				char.HumanoidRootPart.Anchored = false
+			end
+		end
 
-           
-            local direction = char.PrimaryPart.CFrame.Position + Vector3.new(0, .5, 0)
-            local bodyPosition = Instance.new("BodyPosition")
-            bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            bodyPosition.P = 27500
+		if input.KeyCode == Enum.KeyCode[settingz.tpkey] then
+			if tp_planting == true then 
+				tp_planting = false
+				tp_position = char.HumanoidRootPart.CFrame
+				workspace.ServerStuff.playAudio:FireServer({ "general" }, "activateexplosive", workspace)
+			else
+				if settingz.instantteleport == true then
+					tp_planting = true
+					char.HumanoidRootPart.CFrame = tp_position
+					workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive2", char.PrimaryPart)
+					workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive", char.PrimaryPart)
+					workspace.ServerStuff.handlePerkVisibility:FireServer("put_googles")
+					wait(0.1)
+					tp_position = nil
+				else
 
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) == true then direction -= char.PrimaryPart.CFrame.ZVector * 18 end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) == true then direction -= char.PrimaryPart.CFrame.XVector * 18 end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) == true then direction += char.PrimaryPart.CFrame.ZVector * 18 end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) == true then direction += char.PrimaryPart.CFrame.XVector * 18 end
+					tp_planting = true
+					workspace.ServerStuff.playAudio:FireServer({ "ai" }, "radio_call1", workspace)
 
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) == false and UserInputService:IsKeyDown(Enum.KeyCode.A) == false and UserInputService:IsKeyDown(Enum.KeyCode.S) == false and UserInputService:IsKeyDown(Enum.KeyCode.D) == false then direction += char.PrimaryPart.CFrame.ZVector * 18 end
-
-            workspace.ServerStuff.playAudio:FireServer({"soldiers"}, "dash", char.PrimaryPart)
-            bodyPosition.Position = direction
-            bodyPosition.Parent = char.PrimaryPart
-char.Humanoid:LoadAnimation(animfolder.special.dash):Play()
-
-            task.wait(.2)
-            bodyPosition:Destroy()
-        end
-       
-        if input.KeyCode == Enum.KeyCode[settingz.posekey] then
-            if posing == false then 
-                posing = true
-                restanim:Play()
-char.HumanoidRootPart.Anchored = true
-            else
-                posing = false
-                restanim:Stop()
-char.HumanoidRootPart.Anchored = false
-            end
-        end
-
-        if input.KeyCode == Enum.KeyCode[settingz.tpkey] then
-            if tp_planting == true then 
-                tp_planting = false
-tp_position = char.HumanoidRootPart.CFrame
-workspace.ServerStuff.playAudio:FireServer({ "general" }, "activateexplosive", workspace)
-            else
-                if settingz.instantteleport == true then
-                    tp_planting = true
-                    char.HumanoidRootPart.CFrame = tp_position
-    workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive2", char.PrimaryPart)
-    workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive", char.PrimaryPart)
-    workspace.ServerStuff.handlePerkVisibility:FireServer("put_googles")
-    wait(0.1)
-    tp_position = nil
-            else
-
-                tp_planting = true
-                workspace.ServerStuff.playAudio:FireServer({ "ai" }, "radio_call1", workspace)
-            
-wait(1)
-char.HumanoidRootPart.CFrame = tp_position
-workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive2", char.PrimaryPart)
-workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive", char.PrimaryPart)
-workspace.ServerStuff.handlePerkVisibility:FireServer("put_googles")
-wait(0.1)
-tp_position = nil
-                end
-            end
-        end
-    end
+					wait(1)
+					char.HumanoidRootPart.CFrame = tp_position
+					workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive2", char.PrimaryPart)
+					workspace.ServerStuff.playAudio:FireServer({"events"}, "shiparrive", char.PrimaryPart)
+					workspace.ServerStuff.handlePerkVisibility:FireServer("put_googles")
+					wait(0.1)
+					tp_position = nil
+				end
+			end
+	end
 end)
 
 char:WaitForChild("Humanoid").Died:Connect(function()
-workspace.ServerStuff.playAudio:FireServer({"soldiers"}, "defeat", char.PrimaryPart)
-wait(0.5)
-humanoiddied = true
+	workspace.ServerStuff.playAudio:FireServer({"soldiers"}, "defeat", char.PrimaryPart)
+	wait(0.5)
+	humanoiddied = true
 end)
 
 -- this is poorly coded, enjoy.
